@@ -14,4 +14,28 @@ variables:
 
 steps:
 - script: dotnet build --configuration $(buildConfiguration)
+  workingDirectory: '$(System.DefaultWorkingDirectory)/ejemploWebApi'
   displayName: 'dotnet build $(buildConfiguration)'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Ejecuta comando build con argumentos --configuration $(BuildConfiguration) --output $(System.DefaultWorkingDirectory)'
+  inputs:
+    command: 'publish'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/ejemploWebApi'
+    publishWebProjects: false
+    arguments: '--configuration $(BuildConfiguration) --output $(System.DefaultWorkingDirectory)'
+    zipAfterPublish: True
+
+    - task: CopyFiles@2
+  displayName: 'Copia todos los Archivos con excepcion de la carpeta .Git, a la ruta: $(Build.ArtifactStagingDirectory)'
+  inputs:
+    contents: |
+     **/*
+     !.git/**/*
+    targetFolder: $(Build.ArtifactStagingDirectory)   
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Construye Artefacto MyBuildFintefy. Publica Sitio en Ruta: $(Build.ArtifactStagingDirectory)'
+  inputs:
+    pathToPublish: $(Build.ArtifactStagingDirectory)
+    artifactName: MiCompilado
